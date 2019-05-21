@@ -1,0 +1,210 @@
+#!/bin/bash -e
+SCRIPT_DIR=$(dirname $0)
+test_dir="$(readlink -zf $(dirname "${BASH_SOURCE[0]}"))"
+cid_file=$(mktemp -u --suffix=.cid)
+
+# Since we built the image locally, we don't want S2I attempt to pull
+# it from Docker hub
+s2i_args="--pull-policy=never"
+
+test_port=8080
+
+image_exists() {
+  docker inspect $1 &>/dev/null
+}
+
+container_exists() {
+  image_exists $(cat $cid_file)
+}
+
+container_ip() {
+  docker inspect --format="{{ .NetworkSettings.IPAddress }}" $(cat $cid_file)
+}
+
+run_s2i_build() {
+echo BUILD  s2i build ${s2i_args} file://${test_dir}/test-app ${IMAGE_NAME} ${IMAGE_NAME}-testapp $@
+  s2i build ${s2i_args} file://${test_dir}/test-app ${IMAGE_NAME} ${IMAGE_NAME}-testapp $@
+}
+
+prepare() {
+  if ! image_exists ${IMAGE_NAME}; then
+    echo "ERROR: The image ${IMAGE_NAME} must exist before this script is executed."
+    exit 1
+  fi
+  # TODO: S2I build require the application is a valid 'GIT' repository, we
+  # should remove this restriction in the future when a file:// is used.
+  pushd ${test_dir}/test-app >/dev/null
+  git init
+  git config user.email "build@localhost" && git config user.name "builder"
+  git add -A && git commit -m "Sample commit" || true
+  popd >/dev/null
+  run_s2i_build $@
+}
+
+run_test_application() {
+  docker run --rm $1 --cidfile=${cid_file} ${IMAGE_NAME}-testapp  >& /dev/null
+}
+
+run_test_application-rt() {
+  docker run --rm $1 --cidfile=${cid_file} ${IMAGE_NAME}-testapp-rt  >& /dev/null
+}
+
+cleanup() {
+  if container_exists; then
+    docker stop $(cat $cid_file)
+    if [[ $1 != "0" ]]; then
+      docker logs $(cat $cid_file)
+    fi
+  fi
+  if image_exists ${IMAGE_NAME}-testapp; then
+    docker rmi -f ${IMAGE_NAME}-testapp
+  fi
+  if image_exists ${IMAGE_NAME}-testapp-rt; then
+    docker rmi -f ${IMAGE_NAME}-testapp-rt
+  fi
+  rm -rf ${test_dir}/test-app/.git
+  rm -f $cid_file
+}
+
+check_result() {
+  local result="$1"
+  if [[ "$result" != "0" ]]; then
+    cleanup 1
+    echo "S2I image '${IMAGE_NAME}' test FAILED (exit code: ${result})"
+    exit $result
+  fi
+}
+
+wait_for_cid() {
+  local max_attempts=10
+  local sleep_time=1
+  local attempt=1
+  local result=1
+  while [ $attempt -le $max_attempts ]; do
+    [ -f $cid_file ] && [ -s $cid_file ] && break
+    echo "Waiting for container start..."
+    attempt=$(( $attempt + 1 ))
+    sleep $sleep_time
+  done
+}
+
+run_test_usage() {
+  s2i usage ${s2i_args} ${IMAGE_NAME} &>/dev/null
+}
+
+test_connection() {
+  local max_attempts=20
+  local sleep_time=1
+  local attempt=1
+  local result=1
+  while [ $attempt -le $max_attempts ]; do
+    echo "Sending GET request to http://$(container_ip):${test_port}/"
+    set +e
+    response_code=$(curl -s -w %{http_code} -o /dev/null http://$(container_ip):${test_port}/)
+    status=$?
+    set -e
+    if [ $status -eq 0 ]; then
+      if [ $response_code -eq 200 ]; then
+        result=0
+      fi
+      break
+    fi
+    attempt=$(( $attempt + 1 ))
+    sleep $sleep_time
+  done
+  return $result
+}
+
+# Test that the openshift config has been provisioned.
+test_config() {
+  docker exec $(cat $cid_file) cat /wildfly/standalone/configuration/standalone.xml | grep "env.AUTO_DEPLOY_EXPLODED,env.OPENSHIFT_AUTO_DEPLOY_EXPLODED:false"
+  check_result $? 
+  docker exec $(cat $cid_file) cat /opt/jboss/wildfly/standalone/configuration/standalone.xml | grep "env.AUTO_DEPLOY_EXPLODED,env.OPENSHIFT_AUTO_DEPLOY_EXPLODED:false"
+  check_result $?  
+  docker exec $(cat $cid_file) cat /s2i-output/wildfly/standalone/configuration/standalone.xml | grep "env.AUTO_DEPLOY_EXPLODED,env.OPENSHIFT_AUTO_DEPLOY_EXPLODED:false"
+}
+
+test_galleon() {
+  docker exec $(cat $cid_file) cat /opt/jboss/wildfly/.galleon/provisioning.xml | grep "<include name=\"$1\"/>"
+  check_result $?  
+  docker exec $(cat $cid_file) cat /s2i-output/wildfly/.galleon/provisioning.xml | grep "<include name=\"$1\"/>"
+}
+
+
+echo "Testing image $IMAGE_NAME"
+
+# Test deployment in default server
+
+prepare
+
+# Verify the 'usage' script is working properly
+run_test_usage
+check_result $?
+
+# Verify that the HTTP connection can be established to test application container
+run_test_application &
+
+# Wait for the container to write it's CID file
+#
+wait_for_cid
+
+test_connection
+check_result $?
+
+test_config
+check_result $?
+
+cleanup 0
+
+# Test deployment in custom server
+
+cid_file=$(mktemp -u --suffix=.cid)
+prepare "-e GALLEON_PROVISION_SERVER=cloud-profile"
+ 
+run_test_application &
+# Wait for the container to write it's CID file
+#
+wait_for_cid
+
+test_connection
+check_result $?
+
+test_galleon cloud-profile
+check_result $?
+
+cleanup 0
+
+cid_file=$(mktemp -u --suffix=.cid)
+prepare "-e GALLEON_PROVISION_SERVER=jaxrs"
+ 
+run_test_application &
+# Wait for the container to write it's CID file
+#
+wait_for_cid
+
+test_connection
+check_result $?
+
+test_galleon jaxrs
+check_result $?
+
+cleanup 0
+# Test chained build, can't with docker 1.3.1
+# cid_file=$(mktemp -u --suffix=.cid)
+# prepare "-e GALLEON_PROVISION_SERVER=jaxrs"
+
+# pushd ${test_dir}/rt-image-chained-build
+# docker build -t ${IMAGE_NAME}-test-app-rt .
+# check_result $?
+# popd
+
+# run_test_application-rt &
+
+# wait_for_cid
+
+# test_connection
+# check_result $?
+
+# cleanup 0
+
+echo "Test SUCCESSFUL"

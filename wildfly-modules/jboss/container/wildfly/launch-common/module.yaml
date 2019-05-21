@@ -1,0 +1,7 @@
+schema_version: 1
+name: jboss.container.wildfly.launch-common
+version: '1.0'
+description: openshift-common script
+
+execute:
+- script: configure.sh

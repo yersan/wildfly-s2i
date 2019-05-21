@@ -1,0 +1,16 @@
+---
+kind: ImageStream
+apiVersion: v1
+metadata:
+  name: wildfly-170-centos7
+spec:
+  tags:
+  - name: latest
+    annotations:
+      description: wildfly-builder image stream
+      iconClass: icon-jboss
+      tags: java,widlfly,galleon
+      version: 'latest'
+    from:
+      kind: DockerImage
+      name: "quay.io/jfdenise/wildfly-170-centos7:latest"

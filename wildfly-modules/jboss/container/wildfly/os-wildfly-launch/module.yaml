@@ -1,0 +1,12 @@
+schema_version: 1
+name: jboss.container.wildfly.os-wildfly-launch
+version: '1.0'
+description: wildfly launch scripts
+
+envs:
+- name: "JBOSS_MODULES_SYSTEM_PKGS_APPEND"
+  example: "org.jboss.byteman"
+  description: "Comma-separated list of package names that will be appended to the JBOSS_MODULES_SYSTEM_PKGS environment variable."
+
+execute:
+- script: configure.sh

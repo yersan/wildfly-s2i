@@ -1,0 +1,8 @@
+schema_version: 1
+name: jboss.container.wildfly.cli-launch
+version: '1.0'
+description: Cli execution of runtime scripts
+
+
+execute:
+- script: configure.sh
