@@ -85,6 +85,11 @@ USER jboss
 CMD $JBOSS_HOME/bin/openshift-launch.sh
 ```
 
+To build the docker image:
+* Copy the Dockerfile content into a `Dockerfile` file
+* Adjust the `--from` argument to reference the image you first built with s2i
+* In the directory that contains the `Dockerfile` run: `docker build -t wildflytest-rt .`
+
 Test
 ---------------------
 This repository also provides a [S2I](https://github.com/openshift/source-to-image) test framework,
@@ -94,6 +99,7 @@ The tests also create a chained build to build a WildFly application runtime ima
 ```
 $ make test
 ```
+When running tests, the WildFly docker images are first built.
 
 Repository organization
 ------------------------
@@ -131,12 +137,19 @@ Image name structure
 
 Example: `wildfly/wildfly-170-centos7`
 
-Environment variables
----------------------
+Environment variables to be used with the WildFly s2i builder image
+-------------------------------------------------------------------
+
 To set environment variables, you can place them as a key value pair into a `.s2i/environment`
 file inside your source code repository.
 
-* MAVEN_ARGS
+* GALLEON_PROVISION_SERVER
+
+    The image contains a set of pre-defined galleon definitions that you can use to provision a custom WildFly server during s2i build.
+    The set of built-in descriptions are:
+     * TODO, add the ones we actually deliver.
+
+* MAVEN_ARG
 
     Overrides the default arguments passed to maven during the build process
 
