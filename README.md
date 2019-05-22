@@ -137,67 +137,63 @@ Image name structure
 
 Example: `wildfly/wildfly-170-centos7`
 
-Environment variables to be used with the WildFly s2i builder image
--------------------------------------------------------------------
+Environment variables to be used at s2i build time
+--------------------------------------------------
 
 To set environment variables, you can place them as a key value pair into a `.s2i/environment`
 file inside your source code repository.
 
-* GALLEON_PROVISION_SERVER
+* `GALLEON_PROVISION_SERVER`
 
     The image contains a set of pre-defined galleon definitions that you can use to provision a custom WildFly server during s2i build.
-    The set of built-in descriptions are:
-     * TODO, add the ones we actually deliver.
+    The set of built-in descriptions you can use as value of the env var are:
+     * cloud-profile
+     * cloud-profile-h2
+     * cloud-profile-mysql 
+     * cloud-profile-postgresql 
+     * full-profile (Vanilla WildFly configuration for standalone and domain)
+     * jaxrs
+     * os-standalone-profile (The default server present in the builder image)
+     * standalone-profile (Vanilla WildFly configuration for standalone)
 
-* MAVEN_ARG
+* Maven env variables
 
-    Overrides the default arguments passed to maven during the build process
+    The maven env variables you can set are documented in this [document](https://github.com/jboss-openshift/cct_module/tree/master/jboss/container/maven/api)
 
-* MAVEN_ARGS_APPEND
 
-    This value will be appended to either the default maven arguments, or the value of MAVEN_ARGS if MAVEN_ARGS is set.
+Environment variables to be used when running application
+---------------------------------------------------------
 
-* MAVEN_OPTS
+Java env variables
 
-    Contains JVM parameters to maven.  Will be appended to JVM arguments that are calculated by the image
-    itself (e.g. heap size), so values provided here will take precedence.
+* The Java env variables you can set are documented in this [document](https://github.com/jboss-openshift/cct_module/tree/master/jboss/container/java/jvm/api)
+* `ENABLE_JPDA`, set to true to enable debug on port 8787, disabled by default.
+* `JAVA_OPTS_EXT`, to append to options to `JAVA_OPTS`
 
-* JAVA_GC_OPTS
+WildFly server env variables
 
-    When set to a non-null value, this value will be passed to the JVM instead of the default garbage collection tuning
-    values defined by the image.
-
-* CONTAINER_CORE_LIMIT
-
-    When set to a non-null value, the number of parallel garbage collection threads will be set to this value.
-
-* USE_JAVA_DIAGNOSTICS
-
-    When set to a non-null value, various JVM related diagnostics will be turned on such as verbose garbage
-    collection tracing.
-
-* AUTO_DEPLOY_EXPLODED
+* `AUTO_DEPLOY_EXPLODED`
 
     When set to `true`, Wildfly will automatically deploy exploded war content.  When unset or set to `false`,
     a `.dodeploy` file must be touched to trigger deployment of exploded war content.
 
-* MYSQL_DATABASE
+* `MYSQL_DATABASE`
 
     If set, WildFly will attempt to define a MySQL datasource based on the assumption you have an OpenShift service named "mysql" defined.
     It will attempt to reference the following environment variables which are automatically defined if the "mysql" service exists:
-    MYSQL_SERVICE_PORT
-    MYSQL_SERVICE_HOST
-    MYSQL_PASSWORD
-    MYSQL_USER
+    `MYSQL_SERVICE_PORT`
+    `MYSQL_SERVICE_HOST`
+    `MYSQL_PASSWORD`
+    `MYSQL_USER`
 
-* POSTGRESQL_DATABASE
+* `POSTGRESQL_DATABASE`
 
     If set, WildFly will attempt to define a PostgreSQL datasource based on the assumption you have an OpenShift service named "postgresql" defined.
     It will attempt to reference the following environment variables which are automatically defined if the "postgresql" service exists:
-    POSTGRESQL_SERVICE_PORT
-    POSTGRESQL_SERVICE_HOST
-    POSTGRESQL_PASSWORD
-    POSTGRESQL_USER
+    `POSTGRESQL_SERVICE_PORT`
+    `POSTGRESQL_SERVICE_HOST`
+    `POSTGRESQL_PASSWORD`
+    `POSTGRESQL_USER`
 
 Known issues
 --------------------
