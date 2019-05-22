@@ -1,7 +1,8 @@
 build = make/build.sh
 
 script_env = \
-	IMAGE_NAME=$(IMAGE_NAME)
+	IMAGE_NAME=$(IMAGE_NAME) \
+        RUNTIME_IMAGE_NAME=$(RUNTIME_IMAGE_NAME)
 
 .PHONY: build
 build:

@@ -46,7 +46,7 @@ run_test_application() {
 }
 
 run_test_application-rt() {
-  docker run --rm $1 --cidfile=${cid_file} ${IMAGE_NAME}-testapp-rt  >& /dev/null
+  docker run --rm $1 --cidfile=${cid_file} ${RUNTIME_IMAGE_NAME}-testapp  >& /dev/null
 }
 
 cleanup() {
@@ -59,8 +59,8 @@ cleanup() {
   if image_exists ${IMAGE_NAME}-testapp; then
     docker rmi -f ${IMAGE_NAME}-testapp
   fi
-  if image_exists ${IMAGE_NAME}-testapp-rt; then
-    docker rmi -f ${IMAGE_NAME}-testapp-rt
+  if image_exists ${RUNTIME_IMAGE_NAME}-testapp; then
+    docker rmi -f ${RUNTIME_IMAGE_NAME}-testapp
   fi
   rm -rf ${test_dir}/test-app/.git
   rm -f $cid_file
@@ -130,6 +130,23 @@ test_galleon() {
   docker exec $(cat $cid_file) cat /s2i-output/wildfly/.galleon/provisioning.xml | grep "<include name=\"$1\"/>"
 }
 
+build_chained_build() {
+rt_docker_dir=$(mktemp -d)
+rt_docker_file=$rt_docker_dir/Dockerfile
+  cat <<EOF > $rt_docker_file
+FROM ${RUNTIME_IMAGE_NAME}:latest
+COPY --from=${IMAGE_NAME}-testapp:latest /s2i-output/wildfly \$JBOSS_HOME
+USER root
+RUN chown -R jboss:root \$JBOSS_HOME && chmod -R ug+rwX \$JBOSS_HOME
+RUN ln -s \$JBOSS_HOME /wildfly
+USER jboss
+CMD \$JBOSS_HOME/bin/openshift-launch.sh
+EOF
+  docker build -t ${RUNTIME_IMAGE_NAME}-testapp $rt_docker_dir
+  ret=$?
+  rm -rf $rt_docker_dir
+  return $ret
+}
 
 echo "Testing image $IMAGE_NAME"
 
@@ -189,22 +206,21 @@ test_galleon jaxrs
 check_result $?
 
 cleanup 0
-# Test chained build, can't with docker 1.3.1
-# cid_file=$(mktemp -u --suffix=.cid)
-# prepare "-e GALLEON_PROVISION_SERVER=jaxrs"
 
-# pushd ${test_dir}/rt-image-chained-build
-# docker build -t ${IMAGE_NAME}-test-app-rt .
-# check_result $?
-# popd
+# Test chained build
+cid_file=$(mktemp -u --suffix=.cid)
+prepare "-e GALLEON_PROVISION_SERVER=jaxrs"
 
-# run_test_application-rt &
+build_chained_build
+check_result $?
 
-# wait_for_cid
+run_test_application-rt &
 
-# test_connection
-# check_result $?
+wait_for_cid
 
-# cleanup 0
+test_connection
+check_result $?
+
+cleanup 0
 
 echo "Test SUCCESSFUL"
