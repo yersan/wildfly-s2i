@@ -24,6 +24,6 @@ cp -r $JBOSS_HOME/standalone/deployments/* /deployments
 rm -rf $JBOSS_HOME/standalone/deployments
 ln -s /deployments $JBOSS_HOME/standalone/deployments
 
-chown -R 1001:0 $JBOSS_HOME && chmod -R ug+rwX $JBOSS_HOME 
-chown -R 1001:0 $HOME
+chown -R jboss:root $JBOSS_HOME && chmod -R ug+rwX $JBOSS_HOME 
+chown -R jboss:root $HOME
 chmod -R ug+rwX $MAVEN_LOCAL_REPO

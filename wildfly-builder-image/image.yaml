@@ -29,8 +29,8 @@ modules:
       repositories:
           - name: cct_module
             git:
-              url: https://github.com/jfdenise/cct_module.git
-              ref: wildfly
+              url: https://github.com/jboss-openshift/cct_module
+              ref: master
           - name: wildfly-modules
             path: ../wildfly-modules
       install:
@@ -54,7 +54,7 @@ modules:
           - name: jboss.container.wildfly.os-wildfly
           
 run:
-      user: 1001
+      user: 185
       cmd:
           - "sh"
           - "-c"
