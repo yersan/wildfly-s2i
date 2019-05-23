@@ -1,7 +1,5 @@
-# wildfly-s2i
-
-Wildfly - CentOS Docker images
-==============================
+Wildfly - CentOS Docker images for Openshift
+============================================
 
 This repository contains the source for building 2 different WildFly docker images:
 
@@ -10,7 +8,9 @@ This repository contains the source for building 2 different WildFly docker imag
 The resulting image can be run using [Docker](http://docker.io).
 
 * WildFly runtime image. An image that contains the minimal dependencies needed to run WildFly with deployed application.
-This image is not runnable, it is to be used to chain a build with an image created by the WildFly S2I builder image.
+This image is not runnable, it is to be used to chain a docker build with an image created by the WildFly S2I builder image.
+
+NB: The image created by chaining an s2i build and a docker build is a good candidate to be managed by the [WildFly Operator](https://github.com/wildfly/wildfly-operator)
 
 CentOS versions currently provided are:
 * CentOS7
@@ -19,7 +19,7 @@ CentOS versions currently provided are:
 Building the images
 -------------------
 
-Images are built using docker and [cekit] (version 3) (http://docs.cekit.io/en/latest/).
+Images are built using docker and [cekit version 3](https://cekit.readthedocs.io/en/latest/index.html).
 
 Cloning the repository:
 
@@ -104,22 +104,24 @@ When running tests, the WildFly docker images are first built.
 Repository organization
 ------------------------
 
-* `imagestreams` contains image streams and templates registered in [openshift library](https://github.com/openshift/library/blob/master/community.yaml)
+* [doc/](doc) some documentation content referenced from this README file.
 
-* `make/` contains make scripts
+* [imagestreams/](imagestreams) contains image streams and templates registered in [openshift library](https://github.com/openshift/library/blob/master/community.yaml)
 
-* `ose3` image streams and templates you can add to a local openshift cluster (eg: `oc create -f ose3/wildfly-s2i-chained-build-template.yml`)
+* [make/](make) contains make scripts
+
+* [ose3](ose3) image streams and templates you can add to a local openshift cluster (eg: `oc create -f ose3/wildfly-s2i-chained-build-template.yml`)
   * `wildfly-builder-image-stream.yml` builder image stream
   * `wildfly-runtime-image-stream.yml` runtime image stream
   * `wildfly-s2i-chained-build-template.yml` template that build an application using s2i and copy the WildFly server and deployed app inside the WildFly runtime image.
 
-* `test/` contains test applications and make test `run` script
+* [test/](test) contains test applications and make test `run` script
 
-* `wildfly-builder-image/` contains builder image yaml file
+* [wildfly-builder-image/](wildfly-builder-image) contains builder image yaml file
 
-* `wildfly-modules/` contains cekit modules specific to wildfly. NB: These modules are progressively removed and added to the [wildfly-cekit-modules](http://github.com/wildfly/wildfly-cekit-modules) repository.
+* [wildfly-modules/](wildfly-modules) contains cekit modules specific to wildfly. NB: These modules are progressively removed and added to the [wildfly-cekit-modules](http://github.com/wildfly/wildfly-cekit-modules) repository.
 
-* `wildfly-runtime-image/` contains runtime image yaml file
+* [wildfly-runtime-image](wildfly-runtime-image) contains runtime image yaml file
 
 Hot Deploy
 ------------------------
@@ -158,8 +160,12 @@ file inside your source code repository.
 
 * Maven env variables
 
-    The maven env variables you can set are documented in this [document](https://github.com/jboss-openshift/cct_module/tree/master/jboss/container/maven/api)
+    * The maven env variables you can set are documented in this [document](https://github.com/jboss-openshift/cct_module/tree/master/jboss/container/maven/api)
+    
+    * `MAVEN_OPTS`
 
+    Contains JVM parameters to maven.  Will be appended to JVM arguments that are calculated by the image
+    itself (e.g. heap size), so values provided here will take precedence.
 
 Environment variables to be used when running application
 ---------------------------------------------------------
@@ -177,6 +183,12 @@ WildFly server env variables
     When set to `true`, Wildfly will automatically deploy exploded war content.  When unset or set to `false`,
     a `.dodeploy` file must be touched to trigger deployment of exploded war content.
 
+* `CLI_GRACEFUL_SHUTDOWN` set to true to disable shutdown.
+
+* `DEFAULT_DATASOURCE` defaut to `POSTGRESQL_DATASOURCE` or `MYSQL_DATASOURCE` or `EXAMPLE_DATASOURCE` or `ExampleDS`
+
+* `EXAMPLE_DATASOURCE` default to `ExampleDS`
+
 * `MYSQL_DATABASE`
 
     If set, WildFly will attempt to define a MySQL datasource based on the assumption you have an OpenShift service named "mysql" defined.
@@ -185,6 +197,8 @@ WildFly server env variables
     `MYSQL_SERVICE_HOST`
     `MYSQL_PASSWORD`
     `MYSQL_USER`
+
+* `OPENSHIFT_SMTP_HOST` default to `localhost`
 
 * `POSTGRESQL_DATABASE`
 
@@ -195,10 +209,32 @@ WildFly server env variables
     `POSTGRESQL_PASSWORD`
     `POSTGRESQL_USER`
 
-Known issues
+* `SCRIPT_DEBUG` set to true to enable launch script debug.
+
+* `SERVER_CONFIGURATION` name of standalone XML configuration file. Default to `standalone.xml`
+
+* `WILDFLY_ENABLE_STATISTICS` default to `true`
+
+* `WILDFLY_MANAGEMENT_BIND_ADDRESS`  default to `0.0.0.0`
+
+* `WILDFLY_PUBLIC_BIND_ADDRESS` default to the value returned by `hostname -i`
+
+* Adding datasources can be done by using env variables defined in this [document](doc/datasources.md)
+
+Jolokia env variables
+
+* The Jolokia env variables you can set are documented in this [document](https://github.com/jboss-openshift/cct_module/tree/master/jboss/container/jolokia/api)
+
+
+Jolokia known issues
 --------------------
 
-**UTF-8 characters not displayed (or displayed as ```?```)**
+* On some minishift versions (at least on v1/33.0) you need to disable security to allow Java console to connect to WildFly server Jolokia agent set `AB_JOLOKIA_AUTH_OPENSHIFT` and `AB_JOLOKIA_PASSWORD_RANDOM` to `false`
+
+S2I build known issues
+----------------------
+
+**If UTF-8 characters are not displayed (or displayed as ```?```)**
 
 This can be solved by providing to the JVM the file encoding. Set variable ```MAVEN_OPTS=-Dfile.encoding=UTF-8``` into the build variables
 
