@@ -88,7 +88,7 @@ CMD $JBOSS_HOME/bin/openshift-launch.sh
 To build the docker image:
 * Copy the Dockerfile content into a `Dockerfile` file
 * Adjust the `--from` argument to reference the image you first built with s2i
-* In the directory that contains the `Dockerfile` run: `docker build -t wildflytest-rt .`
+* In the directory that contains the `Dockerfile` run: `docker build --squash -t wildflytest-rt .`
 
 Test
 ---------------------
