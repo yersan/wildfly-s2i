@@ -12,26 +12,26 @@ metadata:
 labels:
   template: wildfly-s2i-chained-build-template
 parameters:
-- name: APP_NAME
+- name: APPLICATION_NAME
   description: The application name. Name is assigned to all of the application objects defined in this template.
   displayName: Image Name
   required: true
-  value: my-app
+  value: wildfly-app
 - name: GIT_REPO
   description: The application git repository
   displayName: git repository
   required: true
-  value: https://github.com/jfdenise/wildfly-s2i
+  value: https://github.com/openshift/openshift-jee-sample.git
 - name: GIT_CONTEXT_DIR
   description: The application git repository sub directory
   displayName: git repository sub directory
   required: false
-  value: test/test-app-jaxrs
+  value:
 - name: GIT_BRANCH
   description: The application git branch
   displayName: git branch
   required: true
-  value: wf-17
+  value:
 - name: GALLEON_SERVER
   description: A builtin Galleon description to provision a custom server
   displayName: Builtin Galleon description name
@@ -42,25 +42,25 @@ objects:
   kind: ImageStream
   metadata:
     labels:
-      app: ${APP_NAME}
-    name: ${APP_NAME}
+      app: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}
 - apiVersion: image.openshift.io/v1
   kind: ImageStream
   metadata:
     labels:
-      app: ${APP_NAME}-build-artifacts
-    name: ${APP_NAME}-build-artifacts
+      app: ${APPLICATION_NAME}-build-artifacts
+    name: ${APPLICATION_NAME}-build-artifacts
 - apiVersion: build.openshift.io/v1
   kind: BuildConfig
   metadata:
     labels:
-      app: ${APP_NAME}-build-artifacts
-    name: ${APP_NAME}-build-artifacts
+      app: ${APPLICATION_NAME}-build-artifacts
+    name: ${APPLICATION_NAME}-build-artifacts
   spec:
     output:
       to:
         kind: ImageStreamTag
-        name: ${APP_NAME}-build-artifacts:latest
+        name: ${APPLICATION_NAME}-build-artifacts:latest
     runPolicy: Serial
     source:
       git:
@@ -92,13 +92,13 @@ objects:
   kind: BuildConfig
   metadata:
     labels:
-      app: ${APP_NAME}
-    name: ${APP_NAME}
+      app: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}
   spec:
     output:
       to:
         kind: ImageStreamTag
-        name: ${APP_NAME}:latest
+        name: ${APPLICATION_NAME}:latest
     source:
       dockerfile: |-
         FROM wildfly-runtime-centos7:latest
@@ -111,7 +111,7 @@ objects:
       images:
         - from: 
             kind: ImageStreamTag
-            name: ${APP_NAME}-build-artifacts:latest
+            name: ${APPLICATION_NAME}-build-artifacts:latest
           paths: 
           - sourcePath: /s2i-output/wildfly/
             destinationDir: "."
@@ -128,6 +128,6 @@ objects:
       imageChange:
         from:
           kind: ImageStreamTag
-          name: ${APP_NAME}-build-artifacts:latest
+          name: ${APPLICATION_NAME}-build-artifacts:latest
     - type: ConfigChange
     
