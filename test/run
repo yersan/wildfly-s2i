@@ -22,13 +22,16 @@ container_ip() {
 }
 
 run_s2i_build() {
-echo BUILD  s2i build ${s2i_args} file://${test_dir}/test-app ${IMAGE_NAME} ${IMAGE_NAME}-testapp $@
-  s2i build ${s2i_args} file://${test_dir}/test-app ${IMAGE_NAME} ${IMAGE_NAME}-testapp $@
+  s2i build ${s2i_args} file://${test_dir}/test-app ${IMAGE_NAME}:${IMAGE_VERSION} ${IMAGE_NAME}-testapp $@
 }
 
 prepare() {
-  if ! image_exists ${IMAGE_NAME}; then
-    echo "ERROR: The image ${IMAGE_NAME} must exist before this script is executed."
+  if ! image_exists ${IMAGE_NAME}:${IMAGE_VERSION}; then
+    echo "ERROR: The image ${IMAGE_NAME}:${IMAGE_VERSION} must exist before this script is executed."
+    exit 1
+  fi
+  if ! image_exists ${RUNTIME_IMAGE_NAME}:${IMAGE_VERSION}; then
+    echo "ERROR: The image ${RUNTIME_IMAGE_NAME}:${IMAGE_VERSION} must exist before this script is executed."
     exit 1
   fi
   # TODO: S2I build require the application is a valid 'GIT' repository, we
@@ -89,7 +92,7 @@ wait_for_cid() {
 }
 
 run_test_usage() {
-  s2i usage ${s2i_args} ${IMAGE_NAME} &>/dev/null
+  s2i usage ${s2i_args} ${IMAGE_NAME}:${IMAGE_VERSION} &>/dev/null
 }
 
 test_connection() {
@@ -134,7 +137,7 @@ build_chained_build() {
 rt_docker_dir=$(mktemp -d)
 rt_docker_file=$rt_docker_dir/Dockerfile
   cat <<EOF > $rt_docker_file
-FROM ${RUNTIME_IMAGE_NAME}:latest
+FROM ${RUNTIME_IMAGE_NAME}:${IMAGE_VERSION}
 COPY --from=${IMAGE_NAME}-testapp:latest /s2i-output/wildfly \$JBOSS_HOME
 USER root
 RUN chown -R jboss:root \$JBOSS_HOME && chmod -R ug+rwX \$JBOSS_HOME

@@ -66,7 +66,8 @@ objects:
       sourceStrategy:
         from:
           kind: ImageStreamTag
-          name: wildfly-170-centos7:latest
+          name: wildfly-centos7:latest
+          namespace: openshift
         env:
           - name: "GALLEON_PROVISION_SERVER"
             value: ${GALLEON_SERVER}

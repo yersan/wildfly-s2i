@@ -72,7 +72,8 @@ objects:
       sourceStrategy:
         from:
           kind: ImageStreamTag
-          name: wildfly-170-centos7:latest
+          name: wildfly-centos7:latest
+          namespace: openshift
         env:
           - name: "GALLEON_PROVISION_SERVER"
             value: ${GALLEON_SERVER}
@@ -100,7 +101,7 @@ objects:
         name: ${APP_NAME}:latest
     source:
       dockerfile: |-
-        FROM wildfly-runtime-170-centos7:latest
+        FROM wildfly-runtime-centos7:latest
         COPY /wildfly $JBOSS_HOME
         USER root
         RUN chown -R jboss:root $JBOSS_HOME && chmod -R ug+rwX $JBOSS_HOME
@@ -119,7 +120,8 @@ objects:
         imageOptimizationPolicy: SkipLayers
         from:
           kind: ImageStreamTag
-          name: wildfly-runtime-170-centos7:latest
+          name: wildfly-runtime-centos7:latest
+          namespace: openshift
       type: Docker
     triggers:
     - type: ImageChange

@@ -1,6 +1,6 @@
 schema_version: 1
 
-name: "wildfly/wildfly-runtime-170-centos7"
+name: "wildfly/wildfly-runtime-centos7"
 description: "The wildfly runtime image"
 version: "17.0"
 from: "centos:7"
@@ -16,7 +16,7 @@ envs:
       description: If set to true, ensures that the bash scripts are executed with the -x option, printing the commands and their arguments as they are executed.
       example: "true"
     - name: IMAGE_NAME
-      value: "wildfly/wildfly-runtime-170-centos7"
+      value: "wildfly/wildfly-runtime-centos7"
     - name: IMAGE_VERSION
       value: "17.0"
     - name: JBOSS_HOME

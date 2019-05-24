@@ -52,7 +52,7 @@ For example, to build the builder image:
 $ cd wildfly-builder-image
 $ cekit build docker
 $ cd target/image
-$ docker build -t wildfly/wildfly-170-centos7 .
+$ docker build -t wildfly/wildfly-centos7:latest .
 ```
 
 S2I Usage
@@ -62,7 +62,7 @@ using standalone [S2I](https://github.com/openshift/source-to-image) and then ru
 resulting image with [Docker](http://docker.io) execute:
 
 ```
-$ s2i build git://github.com/openshift/openshift-jee-sample wildfly/wildfly-170-centos7 wildflytest
+$ s2i build git://github.com/openshift/openshift-jee-sample wildfly/wildfly-centos7:latest wildflytest
 $ docker run -p 8080:8080 wildflytest
 ```
 
@@ -76,7 +76,7 @@ Chaining s2i build with runtime image
 The following Dockerfile uses multi-stage build to chain builds to create a lightweight image.
 
 ```
-FROM wildfly/wildfly-runtime-170-centos7:latest
+FROM wildfly/wildfly-runtime-centos7:latest
 COPY --from=wildflytest:latest /s2i-output/wildfly $JBOSS_HOME
 USER root
 RUN chown -R jboss:root $JBOSS_HOME && chmod -R ug+rwX $JBOSS_HOME
@@ -133,11 +133,11 @@ Image name structure
 ------------------------
 ##### Structure: openshift/3
 
-1. Platform name (lowercase) - wildfly
-2. Platform version(without dots) - 170
-3. Base builder image - centos7
+1. Platform name (lowercase) - `wildfly`
+2. Base builder image - `centos7`
+3. WildFly version or `latest`
 
-Example: `wildfly/wildfly-170-centos7`
+Example: `wildfly/wildfly-centos7:17.0`
 
 Environment variables to be used at s2i build time
 --------------------------------------------------

@@ -1,14 +1,14 @@
 schema_version: 1
 
-name: "wildfly/wildfly-170-centos7"
+name: "wildfly/wildfly-centos7"
 description: "The wildfly s2i image"
 version: "17.0"
 from: "centos/s2i-base-centos7"
 labels:
     - name: io.k8s.description
-      value: "Platform for building and running JEE applications on WildFly 17.0.0.Final"
+      value: "Platform for building and running JEE applications on WildFly $WILDFLY_VERSION"
     - name: io.k8s.display-name
-      value: "WildFly 17.0.0.Final"
+      value: "WildFly $WILDFLY_VERSION"
     - name: io.openshift.expose-services
       value: "8080:http,8778:jolokia"
     - name: io.openshift.tags
@@ -20,7 +20,7 @@ envs:
       description: If set to true, ensures that the bash scripts are executed with the -x option, printing the commands and their arguments as they are executed.
       example: "true"
     - name: IMAGE_NAME
-      value: "wildfly/wildfly-170-centos7"
+      value: "wildfly/wildfly-centos7"
     - name: IMAGE_VERSION
       value: "17.0"
 ports:
