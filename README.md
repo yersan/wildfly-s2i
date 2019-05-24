@@ -20,7 +20,7 @@ Building the images
 -------------------
 
 Images are built using [docker community edition](https://docs.docker.com/) and [cekit version 3](https://cekit.readthedocs.io/en/latest/index.html).
-Mac OSX installation [tips](doc/build-mac.md).
+Mac OSX installation and build [tips](doc/build-mac.md).
 
 Cloning the repository:
 
@@ -41,19 +41,6 @@ Building WildFly runtime image from scratch:
 ```
 $ cd wildfly-runtime-image
 $ cekit build docker
-```
-
-Building on Mac
-
-On Mac, due to some cekit issues, you need to do the build of the 2 images in 2 steps.
-cekit will fail but the target/image/Dockerfile is properly generated so you can use docker to build the image.
-For example, to build the builder image:
-
-```
-$ cd wildfly-builder-image
-$ cekit build docker
-$ cd target/image
-$ docker build -t wildfly/wildfly-centos7:latest .
 ```
 
 S2I Usage
