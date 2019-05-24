@@ -227,6 +227,37 @@ Jolokia env variables
 * The Jolokia env variables you can set are documented in this [document](https://github.com/jboss-openshift/cct_module/tree/master/jboss/container/jolokia/api)
 
 
+Provisioning a custom server using [Galleon](https://docs.wildfly.org/galleon/)
+-------------------------------------------------------------------------------
+
+The s2i builder image comes with a set of pre-defined galleon maven projects that you can reference from your s2i build 
+(thanks to the `GALLEON_PROVISION_SERVER` env variable in the default template or Galleon parameter 
+in the chained build template). Names of directories located in this [directory](wildfly-modules/jboss/container/wildfly/galleon/artifacts/opt/jboss/container/wildfly/galleon/definitions/) 
+can be value of the template parameter or env variable.
+
+Note: You can use these maven projects as a starting point to define your own WildFly server.
+
+If you want to define your own WildFly server, create a directory named `wildfly-galleon` at the root of your application sources project. This directory must
+contains a maven project. During s2i build `mvn install` is called and expects the directory `target/wildfly` to be created in `wildfly-galleon` directory containing a galleon provisioned WildFly server.
+This server is used to replace the one present in the s2i builder image. 
+In your maven project you must use the [Galleon maven plugin](https://docs.wildfly.org/galleon/#_maven_plugin).
+
+The Galleon feature-pack to use is `org.wildfly.galleon.s2i:wildfly-s2i-galleon-pack:<Wildfly version of the image>`, it is only available from the WildFly s2i builder image 
+(located in .m2/repository).
+
+This feature-pack contains the default standalone.xml configuration required for OpenShift. In addition it exposes the following Galleon layers that you can combine with
+[WildFly defined galleon layers](https://docs.wildfly.org/16/Admin_Guide.html#defined-galleon-layers):
+* mysql-datasource
+* mysql-driver
+* postgresql-datasource
+* postgresql-driver
+
+Note: These Galleon layers are defined in [wildfly-extras Galleon feature-pack](https://github.com/wildfly-extras/wildfly-datasources-galleon-pack).
+
+As an example, this [custom configuration Galleon definition](wildfly-modules/jboss/container/wildfly/galleon/artifacts/opt/jboss/container/wildfly/galleon/definitions/cloud-profile-postgresql/config.xml) 
+defined in this [maven project](wildfly-modules/jboss/container/wildfly/galleon/artifacts/opt/jboss/container/wildfly/galleon/definitions/cloud-profile-postgresql) 
+combines the WildFly `cloud-profile` with the `postgresql-datasource`
+
 Jolokia known issues
 --------------------
 
@@ -239,6 +270,11 @@ S2I build known issues
 
 This can be solved by providing to the JVM the file encoding. Set variable ```MAVEN_OPTS=-Dfile.encoding=UTF-8``` into the build variables
 
+References
+----------
+* WildFly defined galleon layers: 
+* Galleon documentation: https://docs.wildfly.org/galleon/
+* Galleon maven plugin: https://docs.wildfly.org/galleon/#_maven_plugin
 
 Copyright
 --------------------
