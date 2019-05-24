@@ -245,6 +245,20 @@ As an example, this [custom configuration Galleon definition](wildfly-modules/jb
 defined in this [maven project](wildfly-modules/jboss/container/wildfly/galleon/artifacts/opt/jboss/container/wildfly/galleon/definitions/cloud-profile-postgresql) 
 combines the WildFly `cloud-profile` with the `postgresql-datasource`
 
+
+S2i build time WildFly server customization hooks
+-------------------------------------------------
+
+ * Wildfly configuration files from the `<application source>/<cfg|configuration>` are copied into the wildfly configuration directory.
+
+ * Pre-built war files from the `<application source>/deployments` are moved into the wildfly deployment directory.
+
+ * Wildfly modules from the `<application source>/modules` are copied into the wildfly modules directory.
+
+ * Execute WildFly CLI scripts by using `S2I_IMAGE_SOURCE_MOUNTS` and `install.sh` scripts as documented in [s2i core documentation](https://github.com/jboss-openshift/cct_module/tree/master/jboss/container/s2i/core/api)
+   
+This [test application](test/test-app-postgres-custom) highlight the usage of these customization hooks.
+
 Jolokia known issues
 --------------------
 
@@ -256,12 +270,6 @@ S2I build known issues
 **If UTF-8 characters are not displayed (or displayed as ```?```)**
 
 This can be solved by providing to the JVM the file encoding. Set variable ```MAVEN_OPTS=-Dfile.encoding=UTF-8``` into the build variables
-
-References
-----------
-* WildFly defined galleon layers: 
-* Galleon documentation: https://docs.wildfly.org/galleon/
-* Galleon maven plugin: https://docs.wildfly.org/galleon/#_maven_plugin
 
 Copyright
 --------------------
