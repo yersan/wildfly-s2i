@@ -1,8 +1,8 @@
 schema_version: 1
 
-name: "wildfly/wildfly-centos7"
-description: "The wildfly s2i image"
-version: "17.0"
+name: &imgName "wildfly/wildfly-centos7"
+description: "The WildFly s2i image"
+version: &imgVersion "17.0"
 from: "centos/s2i-base-centos7"
 labels:
     - name: io.k8s.description
@@ -20,9 +20,9 @@ envs:
       description: If set to true, ensures that the bash scripts are executed with the -x option, printing the commands and their arguments as they are executed.
       example: "true"
     - name: IMAGE_NAME
-      value: "wildfly/wildfly-centos7"
+      value: *imgName
     - name: IMAGE_VERSION
-      value: "17.0"
+      value: *imgVersion
 ports:
     - value: 8080
 modules:
@@ -52,7 +52,7 @@ modules:
           # At this point, all scripts must have been added to JBOSS_HOME and to custom galleon packages location
           - name: jboss.container.wildfly.galleon-build-fp
           - name: jboss.container.wildfly.os-wildfly
-          
+
 run:
       user: 185
       cmd:

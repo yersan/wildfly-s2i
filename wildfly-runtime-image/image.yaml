@@ -1,8 +1,8 @@
 schema_version: 1
 
-name: "wildfly/wildfly-runtime-centos7"
-description: "The wildfly runtime image"
-version: "17.0"
+name: &imgName "wildfly/wildfly-runtime-centos7"
+description: "The WildFly runtime image"
+version: &imgVersion "17.0"
 from: "centos:7"
 labels:
     - name: io.openshift.expose-services
@@ -16,9 +16,9 @@ envs:
       description: If set to true, ensures that the bash scripts are executed with the -x option, printing the commands and their arguments as they are executed.
       example: "true"
     - name: IMAGE_NAME
-      value: "wildfly/wildfly-runtime-centos7"
+      value: *imgName
     - name: IMAGE_VERSION
-      value: "17.0"
+      value: *imgVersion
     - name: JBOSS_HOME
       value: /opt/jboss/wildfly
 
