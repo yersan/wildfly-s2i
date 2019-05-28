@@ -2,13 +2,13 @@
 kind: ImageStream
 apiVersion: v1
 metadata:
-  name: wildfly-runtime-centos7
+  name: wildfly-runtime
 spec:
   tags:
   - name: latest
     annotations:
       description: wildfly-runtime image stream
-      iconClass: icon-jboss
+      iconClass: icon-wildfly
       tags: java,widlfly
       version: 'latest'
     from:
@@ -17,7 +17,7 @@ spec:
   - name: "17.0"
     annotations:
       description: wildfly-runtime image stream
-      iconClass: icon-jboss
+      iconClass: icon-wildfly
       tags: java,widlfly
       version: '17.0'
     from:

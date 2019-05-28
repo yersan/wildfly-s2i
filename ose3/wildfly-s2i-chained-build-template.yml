@@ -4,7 +4,7 @@ metadata:
   name: wildfly-s2i-chained-build-template
   annotations:
     iconClass: icon-wildfly
-    openshift.io/display-name: WildFly s2i chained build
+    openshift.io/display-name: WildFly S2I Chained Build
     openshift.io/provider-display-name: Red Hat, Inc.
     template.openshift.io/long-description: S2I build of WildFly application (<app-name>-build-artifacts image) followed by a build to create a lightweight application image (<app-name> image). <app-name> image can then be managed by the WildFly Operator.
     description: S2I build of WildFly application (<app-name>-build-artifacts image) followed by a build to create a lightweight application image (<app-name> image). <app-name> image can then be managed by the WildFly Operator.
@@ -30,11 +30,16 @@ parameters:
 - name: GIT_BRANCH
   description: The application git branch
   displayName: git branch
+  required: false
+  value: master
+- name: IMAGE_STREAM_NAMESPACE
+  description: Namespace in which the ImageStreams for WildFly images are installed. These ImageStreams are normally installed in the openshift namespace. You should only need to modify this if you've installed the ImageStreams in a different namespace/project.
+  displayName: ImageStreams Namespace
   required: true
-  value:
+  value: openshift
 - name: GALLEON_SERVER
   description: A builtin Galleon description to provision a custom server
-  displayName: Builtin Galleon description name
+  displayName: Builtin Galleon Description Name
   required: false
   value:
 objects:
@@ -72,8 +77,8 @@ objects:
       sourceStrategy:
         from:
           kind: ImageStreamTag
-          name: wildfly-centos7:latest
-          namespace: openshift
+          name: wildfly:latest
+          namespace: ${IMAGE_STREAM_NAMESPACE}
         env:
           - name: "GALLEON_PROVISION_SERVER"
             value: ${GALLEON_SERVER}
@@ -82,12 +87,6 @@ objects:
     - imageChange:
       type: ImageChange
     - type: ConfigChange
-    - generic:
-        secret: secret101
-      type: Generic
-    - github:
-      secret: secret101
-    type: GitHub
 - apiVersion: build.openshift.io/v1
   kind: BuildConfig
   metadata:
@@ -120,8 +119,8 @@ objects:
         imageOptimizationPolicy: SkipLayers
         from:
           kind: ImageStreamTag
-          name: wildfly-runtime-centos7:latest
-          namespace: openshift
+          name: wildfly-runtime:latest
+          namespace: ${IMAGE_STREAM_NAMESPACE}
       type: Docker
     triggers:
     - type: ImageChange

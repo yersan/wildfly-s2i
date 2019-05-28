@@ -2,14 +2,17 @@
 kind: ImageStream
 apiVersion: v1
 metadata:
-  name: wildfly-centos7
+  name: wildfly
+  annotations:
+    openshift.io/display-name: "WildFly S2I"
 spec:
   tags:
   - name: latest
     annotations:
       description: wildfly-builder image stream
-      iconClass: icon-jboss
-      tags: java,widlfly,galleon
+      iconClass: icon-wildfly
+      tags: builder,java,widlfly,galleon
+      sampleRepo: https://github.com/openshift/openshift-jee-sample.git
       version: 'latest'
     from:
       kind: DockerImage
@@ -17,8 +20,9 @@ spec:
   - name: "17.0"
     annotations:
       description: wildfly-builder image stream
-      iconClass: icon-jboss
-      tags: java,widlfly,galleon
+      iconClass: icon-wildfly
+      tags: builder,java,widlfly,galleon
+      sampleRepo: https://github.com/openshift/openshift-jee-sample.git
       version: '17.0'
     from:
       kind: DockerImage
