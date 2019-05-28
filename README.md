@@ -98,7 +98,7 @@ Repository organization
 
 * [make/](make) contains make scripts
 
-* [ose3](ose3) image streams and templates you can add to a local openshift cluster (eg: `oc create -f ose3/wildfly-s2i-chained-build-template.yml`)
+* [templates](templates) templates you can add to a local openshift cluster (eg: `oc create -f templates/wildfly-s2i-chained-build-template.yml`)
   * `wildfly-builder-image-stream.yml` builder image stream
   * `wildfly-runtime-image-stream.yml` runtime image stream
   * `wildfly-s2i-chained-build-template.yml` template that build an application using s2i and copy the WildFly server and deployed app inside the WildFly runtime image.
@@ -258,6 +258,44 @@ S2i build time WildFly server customization hooks
  * Execute WildFly CLI scripts by using `S2I_IMAGE_SOURCE_MOUNTS` and `install.sh` scripts as documented in [s2i core documentation](https://github.com/jboss-openshift/cct_module/tree/master/jboss/container/s2i/core/api)
    
 This [test application](test/test-app-postgres-custom) highlight the usage of these customization hooks.
+
+
+OpenShift `oc` usage
+--------------------
+
+In case your openshift installation doesn't contain the images and templates:
+
+* Adding the image streams: `oc create -f imagestreams/wildfly-centos7.yml` and `oc create -f imagestreams/wildfly-runtime-centos7.yml`. 
+`wildfly` and `wildfly-runtime` imagestreams are created.
+
+* Adding the template: `oc create -f templates/wildfly-s2i-chained-build-template.yml`. Template `wildfly-s2i-chained-build-template` is created.
+
+* The imagestreams and templates are added to the namespace (project) currently selected. It is recommended to add the imagestreams to the `openshift`
+ namespace. In case you don't have access to the openshift namespace, you can still add the imagestreams to your project. 
+You will need to use `IMAGE_STREAM_NAMESPACE=<my project>` parameter when using the `wildfly-s2i-chained-build-template` template to create an application.
+
+* When adding the `wildfly` imagestream to the `openshift` namespace, the OpenShift catalog is automatically populated with a the template `WildFly` allowing you to
+create new build and new deployment from the OpenShift Web Console.
+
+Building a new application image from the `wildfly-s2i-chained-build-template` (to be then managed by WildFly Operator):
+
+* `oc new-app wildfly-s2i-chained-build-template`
+
+Building a new application image from the `wildfly-s2i-chained-build-template` and provision a `cloud-profile` WildFly server (to be then managed by WildFly Operator):
+
+* `oc new-app wildfly-s2i-chained-build-template -p GALLEON_PROVISION_SERVER=cloud-profile`
+
+Building a new application image from the `wildfly-s2i-chained-build-template` with `wildfly` and `wildfly-runtime` imagestreams registered in `myproject` (to be then managed by WildFly Operator):
+
+* `oc new-app wildfly-s2i-chained-build-template -p IMAGE_STREAM_NAMESPACE=myproject`
+
+Starting a new deployment from an image created using `wildfly-s2i-chained-build-template` template (NB: it is advised to use the WildFly Operator instead):
+
+* `oc new-app <namespace>/<image name> -n <namespace>`
+
+Create a new application from the `wildfly` imagestream (s2i build and OpenShift deployment) with a `jaxrs` provisioned server:
+
+* `oc new-app --name=my-app wildfly~https://github.com/openshiftdemos/os-sample-java-web.git --build-env GALLEON_PROVISION_SERVER=jaxrs` 
 
 Jolokia known issues
 --------------------

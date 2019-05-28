@@ -37,7 +37,7 @@ parameters:
   displayName: ImageStreams Namespace
   required: true
   value: openshift
-- name: GALLEON_SERVER
+- name: GALLEON_PROVISION_SERVER
   description: A builtin Galleon description to provision a custom server
   displayName: Builtin Galleon Description Name
   required: false
@@ -81,7 +81,7 @@ objects:
           namespace: ${IMAGE_STREAM_NAMESPACE}
         env:
           - name: "GALLEON_PROVISION_SERVER"
-            value: ${GALLEON_SERVER}
+            value: ${GALLEON_PROVISION_SERVER}
       type: Source
     triggers:
     - imageChange:
