@@ -5,7 +5,20 @@ source ${JBOSS_HOME}/bin/launch/openshift-cli-modules.sh
 source $JBOSS_HOME/bin/launch/logging.sh
 
 function exec_cli_scripts() {
-  if [ -s "${CLI_SCRIPT_FILE}" ]; then
+
+  # Dump the cli script file for debugging
+  if [ "${CLI_DEBUG^^}" = "TRUE" ]; then
+    echo "================= CLI files debug ================="
+    echo "=========== ${CLI_DRIVERS_FILE} contents:"
+    cat "${CLI_DRIVERS_FILE}"
+    echo "=========== ${CLI_SCRIPT_FILE} contents:"
+    cat "${CLI_SCRIPT_FILE}"
+    echo "=========== ${CLI_SCRIPT_PROPERTY_FILE} contents:"
+    cat "${CLI_SCRIPT_PROPERTY_FILE}"
+    echo "==================================================="
+  fi
+
+  if [ -s "${CLI_SCRIPT_FILE}" ] || [ -f "${CLI_DRIVERS_FILE}" ]; then
     #Check we are able to use the jboss-cli.sh
     if ! [ -f "${JBOSS_HOME}/bin/jboss-cli.sh" ]; then
       echo "Cannot find ${JBOSS_HOME}/bin/jboss-cli.sh. Scripts cannot be applied"
@@ -15,6 +28,9 @@ function exec_cli_scripts() {
     systime=$(date +%s)
     CLI_SCRIPT_FILE_FOR_EMBEDDED=/tmp/cli-configuration-script-${systime}.cli
     echo "embed-server --timeout=30 --server-config=${SERVER_CONFIG} --std-out=discard" > ${CLI_SCRIPT_FILE_FOR_EMBEDDED}
+    if [ -f "${CLI_DRIVERS_FILE}" ]; then
+      cat ${CLI_DRIVERS_FILE} >> ${CLI_SCRIPT_FILE_FOR_EMBEDDED}
+    fi
     cat ${CLI_SCRIPT_FILE} >> ${CLI_SCRIPT_FILE_FOR_EMBEDDED}
     echo "" >> ${CLI_SCRIPT_FILE_FOR_EMBEDDED}
     echo "stop-embedded-server" >> ${CLI_SCRIPT_FILE_FOR_EMBEDDED}
@@ -39,6 +55,7 @@ function exec_cli_scripts() {
       rm ${CLI_SCRIPT_PROPERTY_FILE} 2> /dev/null
       rm ${CLI_SCRIPT_ERROR_FILE} 2> /dev/null
       rm ${CLI_SCRIPT_FILE_FOR_EMBEDDED} 2> /dev/null
+      rm ${CLI_DRIVERS_FILE} 2> /dev/null
     fi
   fi
 }
@@ -50,6 +67,9 @@ CLI_SCRIPT_FILE=/tmp/cli-script-${systime}.cli
 CLI_SCRIPT_ERROR_FILE=/tmp/cli-script-error-${systime}.cli
 #The property file used to pass variables to jboss-cli.sh
 CLI_SCRIPT_PROPERTY_FILE=/tmp/cli-script-property-${systime}.cli
+echo " ----------------------------------------> ${CLI_DRIVERS_FILE}"
+#Special CLI file used by s2i install script to add new drivers, see jboss/container/eap/s2i/install-common.sh
+CLI_DRIVERS_FILE=${JBOSS_HOME}/bin/launch/drivers.cli
 
 echo "error_file=${CLI_SCRIPT_ERROR_FILE}" > ${CLI_SCRIPT_PROPERTY_FILE}
 

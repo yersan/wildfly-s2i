@@ -2,7 +2,7 @@
 
 if [ "${SCRIPT_DEBUG}" = "true" ] ; then
     set -x
-    log_info "Script debugging is enabled, allowing bash commands and their arguments to be printed as they are executed"
+    echo "Script debugging is enabled, allowing bash commands and their arguments to be printed as they are executed"
 fi
 
 LOCAL_SOURCE_DIR=/tmp/src
@@ -109,6 +109,7 @@ function configure_drivers(){
           sed -i "s|<!-- ##DRIVERS## -->|${drivers}<!-- ##DRIVERS## -->|" $CONFIG_FILE
         elif [ "${configMode}" = "cli" ]; then
           echo "${drivers}" > ${CLI_DRIVERS_FILE}
+          export CLI_DRIVERS_FILE
         fi
       fi
     fi

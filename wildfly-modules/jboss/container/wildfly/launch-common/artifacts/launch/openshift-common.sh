@@ -33,6 +33,8 @@ fi
 #
 function getConfigurationMode() {
   local marker="${1}"
+  unset -v "$2" || echo "Invalid identifier: $2" >&2
+
   local attemptXml="false"
   local viaCli="false"
   if [ "${CONFIG_ADJUSTMENT_MODE,,}" = "xml" ]; then
@@ -60,5 +62,5 @@ function getConfigurationMode() {
     fi
   fi
 
-  echo "${configVia}"
+  printf -v "$2" '%s' "${configVia}"
 }
