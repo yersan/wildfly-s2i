@@ -13,7 +13,7 @@ DEPLOY_DIR=$JBOSS_HOME/standalone/deployments
 CONFIG_FILE=${JBOSS_HOME}/standalone/configuration/standalone-openshift.xml
 CLI_DRIVERS_FILE=${JBOSS_HOME}/bin/launch/drivers.cli
 
-source ${JBOSS_HOME}/bin/launch/adjustment-mode.sh
+source ${JBOSS_HOME}/bin/launch/openshift-common.sh
 
 function find_env() {
   var=${!1}
