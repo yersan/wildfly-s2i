@@ -230,6 +230,8 @@ WildFly server env variables
 
 * Https config [env var](https://github.com/wildfly/wildfly-cekit-modules/blob/master/jboss/container/wildfly/launch/https/module.yaml)
 
+* Security domains [env var](https://github.com/wildfly/wildfly-cekit-modules/blob/master/jboss/container/wildfly/launch/security-domains/module.yaml)
+
 Jolokia env variables
 
 * The Jolokia env variables you can set are documented in this [document](https://github.com/jboss-openshift/cct_module/tree/master/jboss/container/jolokia/api)

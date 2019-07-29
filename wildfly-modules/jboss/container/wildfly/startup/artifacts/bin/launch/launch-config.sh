@@ -13,6 +13,8 @@ CONFIG_SCRIPT_CANDIDATES=(
   $JBOSS_HOME/bin/launch/postgresql.sh
   $JBOSS_HOME/bin/launch/tracing.sh
   $JBOSS_HOME/bin/launch/https.sh
+  $JBOSS_HOME/bin/launch/security-domains.sh
+  $JBOSS_HOME/bin/launch/elytron.sh
   /opt/run-java/proxy-options
   $JBOSS_HOME/bin/launch/jboss_modules_system_pkgs.sh
 )
